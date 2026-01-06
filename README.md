@@ -1,7 +1,5 @@
 # EZ Client Calculator
 
-**Version 1.0-SNAPSHOT**
-
 A professional Java desktop application for analyzing paystubs to calculate qualified monthly income for mortgage lending purposes (USDA, FHA, and Conventional loans).
 
 ---
