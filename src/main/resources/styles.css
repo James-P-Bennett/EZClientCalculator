@@ -391,3 +391,26 @@
     -fx-padding: 12;
     -fx-background-radius: 4;
 }
+
+/* Drag and Drop Zone */
+.drop-zone {
+    -fx-border-style: dashed;
+    -fx-border-width: 2;
+    -fx-border-color: #BDBDBD;
+    -fx-background-color: #FAFAFA;
+}
+
+.drop-zone-icon {
+    -fx-font-size: 48px;
+}
+
+.drop-zone-prompt {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #212121;
+}
+
+.drop-zone-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #757575;
+}

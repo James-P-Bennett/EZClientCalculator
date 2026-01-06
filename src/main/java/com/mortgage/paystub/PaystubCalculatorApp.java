@@ -1,10 +1,12 @@
 package com.mortgage.paystub;
 
 import com.mortgage.paystub.gui.StatusBar;
+import com.mortgage.paystub.gui.dialogs.AboutDialog;
 import com.mortgage.paystub.gui.tabs.AnalysisTab;
 import com.mortgage.paystub.gui.tabs.CalculationTab;
 import com.mortgage.paystub.gui.tabs.ImportTab;
 import com.mortgage.paystub.gui.tabs.ResultsTab;
+import com.mortgage.paystub.utils.ThemeManager;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -39,6 +41,16 @@ public class PaystubCalculatorApp extends Application {
     public void start(Stage primaryStage) {
         logger.info("Starting EZ Client Calculator application");
 
+        // Set up global exception handler
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            logger.error("Uncaught exception in thread {}: {}", thread.getName(), throwable.getMessage(), throwable);
+            Platform.runLater(() -> {
+                showErrorDialog("Unexpected Error",
+                    "An unexpected error occurred: " + throwable.getMessage() +
+                    "\n\nPlease check the logs for details.");
+            });
+        });
+
         try {
             // Create the main layout
             BorderPane root = new BorderPane();
@@ -58,8 +70,8 @@ public class PaystubCalculatorApp extends Application {
             // Create and configure the scene
             Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-            // Apply CSS styling
-            scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+            // Initialize theme manager with saved theme preference
+            ThemeManager.initialize(scene);
 
             primaryStage.setTitle(APP_TITLE);
             primaryStage.setScene(scene);
@@ -91,38 +103,27 @@ public class PaystubCalculatorApp extends Application {
         // File Menu
         Menu fileMenu = new Menu("File");
 
-        MenuItem openItem = new MenuItem("Open Paystubs...");
-        openItem.setOnAction(e -> {
-            statusBar.setStatus("Opening file chooser...");
-            // Will be implemented in Step 6
-        });
-
-        MenuItem saveSessionItem = new MenuItem("Save Session...");
-        saveSessionItem.setOnAction(e -> {
-            statusBar.setStatus("Saving session...");
-            // Will be implemented later
-        });
-
-        SeparatorMenuItem separator1 = new SeparatorMenuItem();
-
         MenuItem exitItem = new MenuItem("Exit");
         exitItem.setOnAction(e -> {
             logger.info("Exit menu item selected");
             Platform.exit();
         });
 
-        fileMenu.getItems().addAll(openItem, saveSessionItem, separator1, exitItem);
+        fileMenu.getItems().add(exitItem);
 
-        // Edit Menu
-        Menu editMenu = new Menu("Edit");
+        // View Menu
+        Menu viewMenu = new Menu("View");
 
-        MenuItem preferencesItem = new MenuItem("Preferences...");
-        preferencesItem.setOnAction(e -> {
-            statusBar.setStatus("Opening preferences...");
-            showInfoDialog("Preferences", "Preferences will be implemented in a future version.");
+        CheckMenuItem darkModeItem = new CheckMenuItem("Dark Mode");
+        darkModeItem.setSelected(ThemeManager.isDarkMode());
+        darkModeItem.setOnAction(e -> {
+            ThemeManager.toggleTheme();
+            darkModeItem.setSelected(ThemeManager.isDarkMode());
+            statusBar.setStatus("Switched to " + ThemeManager.getCurrentThemeName());
+            logger.info("Theme toggled to: {}", ThemeManager.getCurrentTheme());
         });
 
-        editMenu.getItems().add(preferencesItem);
+        viewMenu.getItems().add(darkModeItem);
 
         // Help Menu
         Menu helpMenu = new Menu("Help");
@@ -138,7 +139,7 @@ public class PaystubCalculatorApp extends Application {
 
         helpMenu.getItems().addAll(userGuideItem, aboutItem);
 
-        menuBar.getMenus().addAll(fileMenu, editMenu, helpMenu);
+        menuBar.getMenus().addAll(fileMenu, viewMenu, helpMenu);
         return menuBar;
     }
 
@@ -240,24 +241,7 @@ public class PaystubCalculatorApp extends Application {
      * Shows the About dialog.
      */
     private void showAboutDialog() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("About");
-        alert.setHeaderText("EZ Client Calculator");
-
-        String about = String.format("""
-                Version: %s
-
-                A paystub income calculator for mortgage lending purposes.
-                Calculates qualified monthly income following USDA, FHA,
-                and Conventional loan guidelines.
-
-                Author: James Bennett
-
-                \u00A9 2026 All Rights Reserved
-                """, VERSION);
-
-        alert.setContentText(about);
-        alert.showAndWait();
+        AboutDialog.showDialog();
     }
 
     /**

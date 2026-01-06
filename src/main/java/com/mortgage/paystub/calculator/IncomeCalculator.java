@@ -27,7 +27,8 @@ import java.util.List;
  * @author James Bennett
  * @version 1.0
  */
-public class IncomeCalculator {
+public class
+IncomeCalculator {
     private static final Logger logger = LoggerFactory.getLogger(IncomeCalculator.class);
 
     // Constants for guardrail thresholds

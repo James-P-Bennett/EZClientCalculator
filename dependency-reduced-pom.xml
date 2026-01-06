@@ -4,7 +4,7 @@
   <groupId>org.jamesphbennett</groupId>
   <artifactId>EZClientCalculator</artifactId>
   <name>EZ Client Calculator</name>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.1-SNAPSHOT</version>
   <description>Paystub Income Calculator for mortgage lending purposes</description>
   <build>
     <plugins>
@@ -38,11 +38,24 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>shaded</shadedClassifierName>
               <transformers>
                 <transformer>
-                  <mainClass>com.mortgage.paystub.PaystubCalculatorApp</mainClass>
+                  <mainClass>com.mortgage.paystub.Main</mainClass>
                 </transformer>
+                <transformer />
               </transformers>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>

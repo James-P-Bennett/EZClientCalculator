@@ -118,22 +118,16 @@ public class ImportTab extends VBox {
         zone.setPadding(new Insets(40));
         zone.setMaxWidth(600);
         zone.setMinHeight(150);
-        zone.getStyleClass().add("card");
-        zone.setStyle(
-                "-fx-border-style: dashed; " +
-                "-fx-border-width: 2; " +
-                "-fx-border-color: #BDBDBD; " +
-                "-fx-background-color: #FAFAFA;"
-        );
+        zone.getStyleClass().addAll("card", "drop-zone");
 
         Label icon = new Label("\uD83D\uDCC1");
-        icon.setStyle("-fx-font-size: 48px;");
+        icon.getStyleClass().add("drop-zone-icon");
 
         Label prompt = new Label("Drag and drop files here");
-        prompt.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        prompt.getStyleClass().add("drop-zone-prompt");
 
         Label hint = new Label("or click the button below to browse");
-        hint.setStyle("-fx-font-size: 12px; -fx-text-fill: #757575;");
+        hint.getStyleClass().add("drop-zone-hint");
 
         zone.getChildren().addAll(icon, prompt, hint);
 
