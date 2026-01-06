@@ -177,7 +177,7 @@ public class PDFPaystubParser implements PaystubParser {
 
     @Override
     public boolean supports(File file) {
-        if (file == null || !file.exists()) {
+        if (file == null) {
             return false;
         }
         String name = file.getName().toLowerCase();

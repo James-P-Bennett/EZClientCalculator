@@ -1,0 +1,393 @@
+/*
+ * EZ Client Calculator - Professional Styling
+ * Financial software theme with clean, modern design
+ */
+
+/* Root color scheme - Professional financial colors */
+.root {
+    -fx-base: #FAFAFA;
+    -fx-background: #FFFFFF;
+    -fx-control-inner-background: #FFFFFF;
+
+    /* Primary colors */
+    -fx-primary-color: #1E88E5;
+    -fx-primary-dark: #1565C0;
+    -fx-primary-light: #64B5F6;
+
+    /* Accent colors */
+    -fx-accent-color: #43A047;
+    -fx-warning-color: #FB8C00;
+    -fx-error-color: #E53935;
+
+    /* Text colors */
+    -fx-text-base-color: #212121;
+    -fx-text-secondary-color: #757575;
+    -fx-text-disabled-color: #BDBDBD;
+
+    /* Background colors */
+    -fx-background-color: #FAFAFA;
+    -fx-border-color: #E0E0E0;
+}
+
+/* Menu Bar */
+.menu-bar {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #E0E0E0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.menu-bar .label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #212121;
+}
+
+.menu-bar .menu:hover,
+.menu-bar .menu:showing {
+    -fx-background-color: #E3F2FD;
+}
+
+.menu-item:hover,
+.menu-item:focused {
+    -fx-background-color: #E3F2FD;
+}
+
+/* Tab Pane */
+.tab-pane {
+    -fx-background-color: #FAFAFA;
+}
+
+.tab-pane .tab-header-area {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #E0E0E0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #F5F5F5;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 10 20;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #757575;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #1E88E5 transparent;
+    -fx-border-width: 0 0 3 0;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #1E88E5;
+    -fx-font-weight: bold;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: #EEEEEE;
+}
+
+.tab-pane .tab-content-area {
+    -fx-background-color: #FFFFFF;
+}
+
+/* Tab Content Styles */
+.tab-content {
+    -fx-background-color: #FFFFFF;
+}
+
+.tab-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #212121;
+}
+
+.tab-description {
+    -fx-font-size: 14px;
+    -fx-text-fill: #757575;
+}
+
+/* Status Bar */
+.status-bar {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E0E0E0 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-min-height: 30px;
+}
+
+.status-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #212121;
+}
+
+.warning-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #FB8C00;
+    -fx-font-weight: bold;
+}
+
+.error-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #E53935;
+    -fx-font-weight: bold;
+}
+
+/* Buttons */
+.button {
+    -fx-background-color: #1E88E5;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-padding: 8 16;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #1976D2;
+}
+
+.button:pressed {
+    -fx-background-color: #1565C0;
+}
+
+.button:disabled {
+    -fx-background-color: #BDBDBD;
+    -fx-text-fill: #FFFFFF;
+    -fx-cursor: default;
+}
+
+.button.secondary {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1E88E5;
+    -fx-border-color: #1E88E5;
+    -fx-border-width: 1;
+}
+
+.button.secondary:hover {
+    -fx-background-color: #E3F2FD;
+}
+
+.button.success {
+    -fx-background-color: #43A047;
+}
+
+.button.success:hover {
+    -fx-background-color: #388E3C;
+}
+
+.button.warning {
+    -fx-background-color: #FB8C00;
+}
+
+.button.warning:hover {
+    -fx-background-color: #F57C00;
+}
+
+.button.danger {
+    -fx-background-color: #E53935;
+}
+
+.button.danger:hover {
+    -fx-background-color: #D32F2F;
+}
+
+/* Text Fields */
+.text-field {
+    -fx-background-color: white;
+    -fx-border-color: #BDBDBD;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+}
+
+.text-field:focused {
+    -fx-border-color: #1E88E5;
+    -fx-border-width: 2;
+}
+
+.text-field.error {
+    -fx-border-color: #E53935;
+}
+
+/* Labels */
+.label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #212121;
+}
+
+.label.section-header {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #212121;
+}
+
+.label.field-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #424242;
+}
+
+/* Table View */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 1;
+}
+
+.table-view .column-header {
+    -fx-background-color: #F5F5F5;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-text-fill: #424242;
+}
+
+.table-view .table-cell {
+    -fx-font-size: 13px;
+    -fx-text-fill: #212121;
+    -fx-border-color: transparent transparent #EEEEEE transparent;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #F5F5F5;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #E3F2FD;
+}
+
+/* List View */
+.list-view {
+    -fx-background-color: white;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 1;
+}
+
+.list-cell {
+    -fx-background-color: white;
+    -fx-text-fill: #212121;
+    -fx-font-size: 13px;
+    -fx-padding: 8 12;
+}
+
+.list-cell:hover {
+    -fx-background-color: #F5F5F5;
+}
+
+.list-cell:selected {
+    -fx-background-color: #E3F2FD;
+    -fx-text-fill: #1565C0;
+}
+
+/* Progress Bar */
+.progress-bar {
+    -fx-background-color: #E0E0E0;
+}
+
+.progress-bar .bar {
+    -fx-background-color: #1E88E5;
+    -fx-background-radius: 2;
+}
+
+/* Scroll Bar */
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #BDBDBD;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #9E9E9E;
+}
+
+/* Tooltips */
+.tooltip {
+    -fx-background-color: #424242;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-background-radius: 4;
+}
+
+/* Alerts and Dialogs */
+.dialog-pane {
+    -fx-background-color: white;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #F5F5F5;
+}
+
+.dialog-pane .content {
+    -fx-padding: 20;
+}
+
+/* Separators */
+.separator {
+    -fx-background-color: #E0E0E0;
+}
+
+/* Card-like containers */
+.card {
+    -fx-background-color: white;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);
+}
+
+/* Financial number styling */
+.currency-label {
+    -fx-font-family: "Courier New", monospace;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.currency-positive {
+    -fx-text-fill: #43A047;
+}
+
+.currency-negative {
+    -fx-text-fill: #E53935;
+}
+
+/* Highlight boxes */
+.info-box {
+    -fx-background-color: #E3F2FD;
+    -fx-border-color: #1E88E5;
+    -fx-border-width: 1 1 1 4;
+    -fx-padding: 12;
+    -fx-background-radius: 4;
+}
+
+.warning-box {
+    -fx-background-color: #FFF3E0;
+    -fx-border-color: #FB8C00;
+    -fx-border-width: 1 1 1 4;
+    -fx-padding: 12;
+    -fx-background-radius: 4;
+}
+
+.error-box {
+    -fx-background-color: #FFEBEE;
+    -fx-border-color: #E53935;
+    -fx-border-width: 1 1 1 4;
+    -fx-padding: 12;
+    -fx-background-radius: 4;
+}
+
+.success-box {
+    -fx-background-color: #E8F5E9;
+    -fx-border-color: #43A047;
+    -fx-border-width: 1 1 1 4;
+    -fx-padding: 12;
+    -fx-background-radius: 4;
+}

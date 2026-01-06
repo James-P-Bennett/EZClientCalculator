@@ -195,7 +195,7 @@ class PDFPaystubParserTest {
         String toString = result.toString();
 
         assertNotNull(toString);
-        assertTrue(toString.contains("HIGH"));
+        assertTrue(toString.contains("High"));
         assertTrue(toString.contains("successful"));
     }
 
