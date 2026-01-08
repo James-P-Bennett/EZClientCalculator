@@ -56,23 +56,19 @@ public class CopyableField extends HBox {
         this.setCursor(Cursor.HAND);
 
         // Base styling
-        String baseStyle = "-fx-background-color: #F5F5F5; -fx-background-radius: 4; " +
-                          "-fx-border-color: transparent; -fx-border-width: 1; -fx-border-radius: 4;";
-        this.setStyle(baseStyle);
+        this.getStyleClass().add("copyable-field");
 
         // Label
         labelField = new Label(label);
-        labelField.setStyle("-fx-font-weight: bold; -fx-font-size: " + (isProminent ? "16px" : "13px") + ";");
+        labelField.getStyleClass().add(isProminent ? "copyable-field-label-prominent" : "copyable-field-label");
 
         // Value
         valueField = new Label(value);
-        valueField.setStyle("-fx-font-size: " + (isProminent ? "18px" : "14px") + "; " +
-                          "-fx-text-fill: " + (isProminent ? "#1565C0" : "#212121") + "; " +
-                          "-fx-font-weight: " + (isProminent ? "bold" : "normal") + ";");
+        valueField.getStyleClass().add(isProminent ? "copyable-field-value-prominent" : "copyable-field-value");
 
         // Copied indicator
         copiedIndicator = new Label("✓ Copied!");
-        copiedIndicator.setStyle("-fx-text-fill: #43A047; -fx-font-size: 12px; -fx-font-weight: bold;");
+        copiedIndicator.getStyleClass().add("copyable-field-copied");
         copiedIndicator.setOpacity(0);
 
         this.getChildren().addAll(labelField, valueField, copiedIndicator);
@@ -80,15 +76,6 @@ public class CopyableField extends HBox {
         // Tooltip
         Tooltip tooltip = new Tooltip("Click to copy");
         Tooltip.install(this, tooltip);
-
-        // Hover effect
-        this.setOnMouseEntered(e -> {
-            this.setStyle(baseStyle + "-fx-border-color: #1E88E5; -fx-background-color: #E3F2FD;");
-        });
-
-        this.setOnMouseExited(e -> {
-            this.setStyle(baseStyle);
-        });
 
         // Click to copy
         this.setOnMouseClicked(e -> copyToClipboard());

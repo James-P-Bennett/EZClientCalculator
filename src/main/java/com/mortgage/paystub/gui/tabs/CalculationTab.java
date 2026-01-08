@@ -80,11 +80,15 @@ public class CalculationTab extends VBox {
 
     /**
      * Performs income calculation and displays results.
+     * @return true if calculation succeeded, false otherwise
      */
-    public void performCalculation(List<Paystub> paystubs, String borrowerName) {
+    public boolean performCalculation(List<Paystub> paystubs, String borrowerName,
+                                       EmploymentType employmentType,
+                                       PayFrequency payFrequency,
+                                       BigDecimal rateOrSalary) {
         if (paystubs == null || paystubs.isEmpty()) {
             showError("No paystubs available", "Please import and review paystubs first.");
-            return;
+            return false;
         }
 
         logger.info("Performing income calculation for borrower: {}", borrowerName);
@@ -92,6 +96,16 @@ public class CalculationTab extends VBox {
         // Create borrower with paystubs
         borrower = new Borrower();
         borrower.setName(borrowerName != null ? borrowerName : "Unknown");
+        borrower.setEmploymentType(employmentType);
+        borrower.setPayFrequency(payFrequency);
+
+        // Set hourly rate or salary based on employment type
+        if (employmentType == EmploymentType.HOURLY) {
+            borrower.setHourlyRate(rateOrSalary);
+        } else if (employmentType == EmploymentType.SALARY) {
+            borrower.setSalary(rateOrSalary);
+        }
+
         for (Paystub paystub : paystubs) {
             borrower.addPaystub(paystub);
         }
@@ -105,10 +119,12 @@ public class CalculationTab extends VBox {
 
             statusBar.setStatus("Calculation complete for " + borrower.getName());
             logger.info("Calculation completed successfully");
+            return true;
 
         } catch (Exception e) {
             logger.error("Error performing calculation", e);
             showError("Calculation Error", "An error occurred during calculation: " + e.getMessage());
+            return false;
         }
     }
 
@@ -288,36 +304,36 @@ public class CalculationTab extends VBox {
     private VBox createVarianceBox() {
         VBox box = new VBox(8);
         box.setPadding(new Insets(12));
-        box.setStyle("-fx-background-color: #F5F5F5; -fx-background-radius: 4;");
+        box.getStyleClass().add("variance-box");
 
         Label varianceLabel = new Label("Variance Analysis");
-        varianceLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        varianceLabel.getStyleClass().add("variance-box-label");
 
         BigDecimal variance = calculation.getVariancePercentage();
         String varianceText = String.format("%.2f%%", variance);
 
         Label varianceValue = new Label(varianceText);
-        varianceValue.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+        varianceValue.getStyleClass().add("variance-box-value");
 
         // Color code based on guardrail
-        String color;
+        String varianceClass;
         String guardrailText;
         if (calculation.isWithinAcceptableRange()) {
-            color = "#43A047"; // Green
+            varianceClass = "variance-acceptable";
             guardrailText = "✓ Within acceptable range (0-5%)";
         } else if (!calculation.hasSignificantVariance()) {
             // Medium variance: not acceptable but not significant (5-10%)
-            color = "#FB8C00"; // Orange
+            varianceClass = "variance-medium";
             guardrailText = "⚠ Medium variance (5-10%) - Documentation needed";
         } else {
-            color = "#E53935"; // Red
+            varianceClass = "variance-significant";
             guardrailText = "⚠ Significant variance (>10%) - Use YTD pacing";
         }
 
-        varianceValue.setStyle(varianceValue.getStyle() + "-fx-text-fill: " + color + ";");
+        varianceValue.getStyleClass().add(varianceClass);
 
         Label guardrailLabel = new Label(guardrailText);
-        guardrailLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: " + color + ";");
+        guardrailLabel.getStyleClass().addAll("variance-guardrail", varianceClass);
 
         box.getChildren().addAll(varianceLabel, varianceValue, guardrailLabel);
         return box;
@@ -329,25 +345,24 @@ public class CalculationTab extends VBox {
     private VBox createRecommendedIncomeSection() {
         VBox section = new VBox(15);
         section.setPadding(new Insets(20));
-        section.getStyleClass().add("card");
-        section.setStyle("-fx-background-color: #E8F5E9; -fx-border-color: #43A047; -fx-border-width: 2;");
+        section.getStyleClass().addAll("card", "recommended-income-section");
 
         Label title = new Label("RECOMMENDED USABLE BASE INCOME");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2E7D32;");
+        title.getStyleClass().add("recommended-income-title");
 
         Label amount = new Label(String.format("$%,.2f", calculation.getRecommendedUsableBaseIncome()));
-        amount.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #1B5E20;");
+        amount.getStyleClass().add("recommended-income-amount");
 
         // Explanation
         String explanation = getIncomeExplanation();
         Label explanationLabel = new Label(explanation);
         explanationLabel.setWrapText(true);
         explanationLabel.setMaxWidth(800);
-        explanationLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #424242;");
+        explanationLabel.getStyleClass().add("recommended-income-explanation");
 
         // Notes area
         Label notesTitle = new Label("Additional Notes:");
-        notesTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 10 0 5 0;");
+        notesTitle.getStyleClass().add("notes-title");
 
         TextArea notesArea = new TextArea();
         notesArea.setPromptText("Add any additional notes or explanations here...");
@@ -435,10 +450,10 @@ public class CalculationTab extends VBox {
     private VBox createVariableEarningBox(Earning earning) {
         VBox box = new VBox(5);
         box.setPadding(new Insets(10));
-        box.setStyle("-fx-background-color: #F5F5F5; -fx-background-radius: 4;");
+        box.getStyleClass().add("variable-earning-box");
 
         Label nameLabel = new Label(earning.getPayTypeName());
-        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+        nameLabel.getStyleClass().add("variable-earning-name");
 
         // Calculate monthly amount (YTD / number of months YTD)
         Paystub mostRecent = borrower.getMostRecentPaystub();
@@ -455,10 +470,10 @@ public class CalculationTab extends VBox {
         }
 
         Label ytdLabel = new Label(String.format("YTD Total: $%,.2f", earning.getYtdAmount()));
-        ytdLabel.setStyle("-fx-font-size: 12px;");
+        ytdLabel.getStyleClass().add("variable-earning-ytd");
 
         Label monthlyLabel = new Label(String.format("Monthly Average: $%,.2f", monthly));
-        monthlyLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #1E88E5;");
+        monthlyLabel.getStyleClass().add("variable-earning-monthly");
 
         box.getChildren().addAll(nameLabel, ytdLabel, monthlyLabel);
         return box;
@@ -489,15 +504,15 @@ public class CalculationTab extends VBox {
         for (String warning : warnings) {
             HBox warningBox = new HBox(10);
             warningBox.setPadding(new Insets(8));
-            warningBox.setStyle("-fx-background-color: #FFF3E0; -fx-background-radius: 4;");
+            warningBox.getStyleClass().add("warning-item");
 
             Label icon = new Label("⚠");
-            icon.setStyle("-fx-font-size: 16px; -fx-text-fill: #FB8C00;");
+            icon.getStyleClass().add("warning-icon");
 
             Label warningText = new Label(warning);
             warningText.setWrapText(true);
             warningText.setMaxWidth(750);
-            warningText.setStyle("-fx-font-size: 13px;");
+            warningText.getStyleClass().add("warning-text");
 
             warningBox.getChildren().addAll(icon, warningText);
             warningsList.getChildren().add(warningBox);
@@ -519,7 +534,11 @@ public class CalculationTab extends VBox {
         recalculateButton.getStyleClass().add("secondary");
         recalculateButton.setOnAction(e -> {
             if (borrower != null) {
-                performCalculation(borrower.getPaystubs(), borrower.getName());
+                BigDecimal rateOrSalary = borrower.getEmploymentType() == EmploymentType.HOURLY
+                    ? borrower.getHourlyRate()
+                    : borrower.getSalary();
+                performCalculation(borrower.getPaystubs(), borrower.getName(),
+                    borrower.getEmploymentType(), borrower.getPayFrequency(), rateOrSalary);
             }
         });
 
@@ -542,13 +561,13 @@ public class CalculationTab extends VBox {
     private VBox createCalculationBox(String name, BigDecimal value, TextFlow formula) {
         VBox box = new VBox(8);
         box.setPadding(new Insets(12));
-        box.setStyle("-fx-background-color: #F5F5F5; -fx-background-radius: 4;");
+        box.getStyleClass().add("calculation-box");
 
         Label nameLabel = new Label(name);
-        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        nameLabel.getStyleClass().add("calculation-box-label");
 
         Label valueLabel = new Label(String.format("$%,.2f", value));
-        valueLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1E88E5;");
+        valueLabel.getStyleClass().add("calculation-box-value");
 
         box.getChildren().addAll(nameLabel, valueLabel, formula);
         return box;

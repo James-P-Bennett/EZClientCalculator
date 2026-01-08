@@ -137,7 +137,7 @@ public class ResultsTab extends VBox {
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
 
         Label subtitle = new Label("Click any field to copy to clipboard");
-        subtitle.setStyle("-fx-font-size: 13px; -fx-text-fill: #757575; -fx-font-style: italic;");
+        subtitle.getStyleClass().add("results-subtitle");
 
         section.getChildren().addAll(title, subtitle);
         return section;
@@ -257,15 +257,14 @@ public class ResultsTab extends VBox {
             statusBar,
             true
         );
-        recommendedField.setStyle("-fx-background-color: #E8F5E9; -fx-padding: 12; " +
-                                 "-fx-border-color: #43A047; -fx-border-width: 2; -fx-border-radius: 4;");
+        recommendedField.getStyleClass().add("copyable-field-recommended");
         fields.getChildren().add(recommendedField);
 
         // Explanation
         String explanation = getIncomeExplanation();
         Label explanationLabel = new Label(explanation);
         explanationLabel.setWrapText(true);
-        explanationLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #616161; -fx-font-style: italic;");
+        explanationLabel.getStyleClass().add("results-explanation");
         fields.getChildren().add(explanationLabel);
 
         section.getChildren().addAll(title, fields);
@@ -310,15 +309,15 @@ public class ResultsTab extends VBox {
         HBox row = new HBox(10);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setPadding(new Insets(8));
-        row.setStyle("-fx-background-color: #F5F5F5; -fx-background-radius: 4;");
+        row.getStyleClass().add("pay-type-row");
 
         // Pay type name
         Label nameLabel = new Label(earning.getPayTypeName());
-        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-min-width: 150px;");
+        nameLabel.getStyleClass().add("pay-type-name");
 
         // Category
         Label categoryLabel = new Label(earning.getCategory().getDisplayName());
-        categoryLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #757575; -fx-min-width: 100px;");
+        categoryLabel.getStyleClass().add("pay-type-category");
 
         // Current amount (copyable)
         CopyableField currentField = new CopyableField(
@@ -326,7 +325,6 @@ public class ResultsTab extends VBox {
             String.format("$%,.2f", earning.getCurrentAmount()),
             statusBar
         );
-        currentField.setStyle("-fx-background-color: transparent; -fx-padding: 4;");
 
         // YTD amount (copyable)
         CopyableField ytdField = new CopyableField(
@@ -334,7 +332,6 @@ public class ResultsTab extends VBox {
             String.format("$%,.2f", earning.getYtdAmount()),
             statusBar
         );
-        ytdField.setStyle("-fx-background-color: transparent; -fx-padding: 4;");
 
         row.getChildren().addAll(nameLabel, categoryLabel, currentField, ytdField);
         return row;
@@ -381,8 +378,7 @@ public class ResultsTab extends VBox {
             statusBar,
             true
         );
-        totalField.setStyle("-fx-background-color: #E3F2FD; -fx-padding: 12; " +
-                           "-fx-border-color: #1E88E5; -fx-border-width: 2; -fx-border-radius: 4;");
+        totalField.getStyleClass().add("copyable-field-variable-total");
         fields.getChildren().add(totalField);
 
         section.getChildren().addAll(title, fields);
@@ -395,17 +391,16 @@ public class ResultsTab extends VBox {
     private VBox createVariableEarningDisplay(Earning earning) {
         VBox box = new VBox(5);
         box.setPadding(new Insets(10));
-        box.setStyle("-fx-background-color: #F5F5F5; -fx-background-radius: 4;");
+        box.getStyleClass().add("variable-earning-box");
 
         Label nameLabel = new Label(earning.getPayTypeName());
-        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        nameLabel.getStyleClass().add("variable-earning-name");
 
         CopyableField ytdField = new CopyableField(
             "YTD Total",
             String.format("$%,.2f", earning.getYtdAmount()),
             statusBar
         );
-        ytdField.setStyle("-fx-background-color: transparent; -fx-padding: 4;");
 
         // Calculate monthly average
         Paystub mostRecent = borrower.getMostRecentPaystub();
@@ -425,7 +420,6 @@ public class ResultsTab extends VBox {
             String.format("$%,.2f", monthly),
             statusBar
         );
-        monthlyField.setStyle("-fx-background-color: transparent; -fx-padding: 4;");
 
         box.getChildren().addAll(nameLabel, ytdField, monthlyField);
         return box;
@@ -437,12 +431,10 @@ public class ResultsTab extends VBox {
     private VBox createSummarySection() {
         VBox section = new VBox(15);
         section.setPadding(new Insets(20));
-        section.getStyleClass().add("card");
-        section.setStyle("-fx-background-color: #E8F5E9; -fx-border-color: #43A047; " +
-                        "-fx-border-width: 3; -fx-border-radius: 6;");
+        section.getStyleClass().addAll("card", "results-summary-section");
 
         Label title = new Label("Section 5: INCOME SUMMARY");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2E7D32;");
+        title.getStyleClass().add("results-summary-title");
         title.setAlignment(Pos.CENTER);
         title.setMaxWidth(Double.MAX_VALUE);
 
@@ -455,7 +447,7 @@ public class ResultsTab extends VBox {
             statusBar,
             true
         );
-        baseIncomeField.setStyle("-fx-background-color: white; -fx-padding: 10; -fx-background-radius: 4;");
+        baseIncomeField.getStyleClass().add("copyable-field-white");
 
         // Variable income subtotal
         CopyableField variableIncomeField = new CopyableField(
@@ -464,7 +456,7 @@ public class ResultsTab extends VBox {
             statusBar,
             true
         );
-        variableIncomeField.setStyle("-fx-background-color: white; -fx-padding: 10; -fx-background-radius: 4;");
+        variableIncomeField.getStyleClass().add("copyable-field-white");
 
         // Separator
         Separator separator = new Separator();
@@ -477,13 +469,13 @@ public class ResultsTab extends VBox {
         VBox totalBox = new VBox(5);
         totalBox.setAlignment(Pos.CENTER);
         totalBox.setPadding(new Insets(15));
-        totalBox.setStyle("-fx-background-color: white; -fx-background-radius: 4;");
+        totalBox.getStyleClass().add("results-total-box");
 
         Label totalLabel = new Label("TOTAL QUALIFIED MONTHLY INCOME");
-        totalLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1B5E20;");
+        totalLabel.getStyleClass().add("results-total-label");
 
         Label totalValue = new Label(String.format("$%,.2f", totalIncome));
-        totalValue.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #2E7D32;");
+        totalValue.getStyleClass().add("results-total-value");
 
         totalBox.getChildren().addAll(totalLabel, totalValue);
 
@@ -539,34 +531,22 @@ public class ResultsTab extends VBox {
     private HBox createCopyableWarning(String warning) {
         HBox box = new HBox(10);
         box.setPadding(new Insets(10));
-        box.setStyle("-fx-background-color: #FFF3E0; -fx-background-radius: 4; -fx-border-color: transparent; " +
-                    "-fx-border-width: 1; -fx-border-radius: 4;");
+        box.getStyleClass().add("warning-copyable");
         box.setCursor(javafx.scene.Cursor.HAND);
         box.setAlignment(Pos.CENTER_LEFT);
 
         Label icon = new Label("\u26A0");
-        icon.setStyle("-fx-font-size: 16px; -fx-text-fill: #FB8C00;");
+        icon.getStyleClass().add("warning-icon");
 
         Label warningText = new Label(warning);
         warningText.setWrapText(true);
-        warningText.setStyle("-fx-font-size: 13px;");
+        warningText.getStyleClass().add("warning-text");
 
         box.getChildren().addAll(icon, warningText);
 
         // Tooltip
         Tooltip tooltip = new Tooltip("Click to copy");
         Tooltip.install(box, tooltip);
-
-        // Hover effect
-        box.setOnMouseEntered(e -> {
-            box.setStyle("-fx-background-color: #FFE0B2; -fx-background-radius: 4; -fx-border-color: #FB8C00; " +
-                        "-fx-border-width: 1; -fx-border-radius: 4;");
-        });
-
-        box.setOnMouseExited(e -> {
-            box.setStyle("-fx-background-color: #FFF3E0; -fx-background-radius: 4; -fx-border-color: transparent; " +
-                        "-fx-border-width: 1; -fx-border-radius: 4;");
-        });
 
         // Click to copy
         box.setOnMouseClicked(e -> {

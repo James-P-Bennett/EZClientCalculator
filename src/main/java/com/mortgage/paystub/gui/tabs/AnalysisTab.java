@@ -97,7 +97,17 @@ public class AnalysisTab extends VBox {
         dataSection.setVisible(false);
         dataSection.setManaged(false);
 
-        this.getChildren().addAll(processingSection, dataSection);
+        // Wrap content in ScrollPane
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background-color: transparent;");
+
+        VBox contentContainer = new VBox(20);
+        contentContainer.setAlignment(Pos.TOP_CENTER);
+        contentContainer.getChildren().addAll(processingSection, dataSection);
+
+        scrollPane.setContent(contentContainer);
+        this.getChildren().add(scrollPane);
     }
 
     /**
@@ -569,6 +579,13 @@ public class AnalysisTab extends VBox {
         ParsingResult result = parsingResults.get(index);
         Paystub paystub = result.getPaystub();
 
+        // Handle null paystub (parsing failed)
+        if (paystub == null) {
+            paystub = new Paystub();
+            result.setPaystub(paystub);  // Set empty paystub for editing
+            logger.warn("Paystub is null at index {}, created empty paystub", index);
+        }
+
         // Load basic info
         employeeNameField.setText(paystub.getEmployeeName() != null ? paystub.getEmployeeName() : "");
         employerNameField.setText(paystub.getEmployerName() != null ? paystub.getEmployerName() : "");
@@ -603,7 +620,11 @@ public class AnalysisTab extends VBox {
         }
 
         updateNavigation();
-        statusBar.setStatus("Viewing paystub " + (index + 1) + " of " + parsingResults.size());
+        String statusMsg = "Viewing paystub " + (index + 1) + " of " + parsingResults.size();
+        if (result.getConfidenceLevel() == ParsingResult.ConfidenceLevel.FAILED) {
+            statusMsg += " (Parsing failed - please enter data manually)";
+        }
+        statusBar.setStatus(statusMsg);
     }
 
     /**
@@ -725,19 +746,59 @@ public class AnalysisTab extends VBox {
             borrowerName = allPaystubs.get(0).getEmployeeName();
         }
 
+        // Get employment type from radio buttons
+        EmploymentType employmentType = null;
+        if (hourlyRadio.isSelected()) {
+            employmentType = EmploymentType.HOURLY;
+        } else if (salaryRadio.isSelected()) {
+            employmentType = EmploymentType.SALARY;
+        }
+
+        // Get pay frequency from combo box
+        PayFrequency payFrequency = payFrequencyCombo.getValue();
+
+        // Get rate or salary from text field
+        BigDecimal rateOrSalary = null;
+        String rateText = rateField.getText();
+        if (rateText != null && !rateText.trim().isEmpty()) {
+            try {
+                rateOrSalary = new BigDecimal(rateText.trim());
+            } catch (NumberFormatException e) {
+                showInfo("Validation Error", "Invalid rate/salary format. Please enter a valid number (e.g., 15.95)");
+                return;
+            }
+        }
+
+        // Validate required fields before calculation
+        if (employmentType == null) {
+            showInfo("Validation Error", "Please select Employment Type (Hourly or Salary)");
+            return;
+        }
+        if (payFrequency == null) {
+            showInfo("Validation Error", "Please select Pay Frequency");
+            return;
+        }
+        if (rateOrSalary == null || rateOrSalary.compareTo(BigDecimal.ZERO) <= 0) {
+            showInfo("Validation Error", "Please enter a valid " +
+                (employmentType == EmploymentType.HOURLY ? "hourly rate" : "salary per pay period"));
+            return;
+        }
+
         logger.info("Triggering calculation for {} paystubs", allPaystubs.size());
         statusBar.setStatus("Calculating income...");
 
         // Trigger calculation in CalculationTab
         if (calculationTab != null) {
-            calculationTab.performCalculation(allPaystubs, borrowerName);
+            boolean success = calculationTab.performCalculation(allPaystubs, borrowerName,
+                employmentType, payFrequency, rateOrSalary);
 
-            // Switch to calculation tab
-            if (onCalculateComplete != null) {
+            // Only switch to calculation tab if calculation succeeded
+            if (success && onCalculateComplete != null) {
                 onCalculateComplete.run();
+                statusBar.setStatus("Calculation complete");
+            } else if (!success) {
+                statusBar.setStatus("Calculation failed - see error message");
             }
-
-            statusBar.setStatus("Calculation complete");
         } else {
             showInfo("Error", "Calculation tab not available. Please restart the application.");
         }

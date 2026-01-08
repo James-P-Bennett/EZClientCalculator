@@ -76,6 +76,18 @@
     </dependencies>
 
     <build>
+        <resources>
+            <!-- Include default resources -->
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!-- Include tessdata directory for OCR -->
+            <resource>
+                <directory>tessdata</directory>
+                <targetPath>tessdata</targetPath>
+            </resource>
+        </resources>
+
         <plugins>
             <!-- Maven Compiler Plugin -->
             <plugin>

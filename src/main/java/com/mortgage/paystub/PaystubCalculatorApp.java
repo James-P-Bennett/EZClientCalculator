@@ -55,17 +55,17 @@ public class PaystubCalculatorApp extends Application {
             // Create the main layout
             BorderPane root = new BorderPane();
 
+            // Create status bar first (needed by tabs)
+            statusBar = new StatusBar();
+            root.setBottom(statusBar);
+
             // Create menu bar
             MenuBar menuBar = createMenuBar(primaryStage);
             root.setTop(menuBar);
 
-            // Create tab pane with all tabs
+            // Create tab pane with all tabs (requires statusBar to be initialized)
             tabPane = createTabPane();
             root.setCenter(tabPane);
-
-            // Create status bar
-            statusBar = new StatusBar();
-            root.setBottom(statusBar);
 
             // Create and configure the scene
             Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);

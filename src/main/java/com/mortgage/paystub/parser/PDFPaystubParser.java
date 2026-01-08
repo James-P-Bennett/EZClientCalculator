@@ -1,12 +1,18 @@
 package com.mortgage.paystub.parser;
 
 import com.mortgage.paystub.model.*;
+import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.TesseractException;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -95,10 +101,42 @@ public class PDFPaystubParser implements PaystubParser {
             String text = extractText(file);
             result.setExtractedText(text);
 
-            if (text == null || text.trim().isEmpty()) {
-                result.addError("No text could be extracted from PDF");
+            logger.debug("Initial text extraction: {} characters, content: '{}'",
+                text == null ? 0 : text.length(),
+                text == null ? "null" : (text.isEmpty() ? "empty" : text.substring(0, Math.min(100, text.length()))));
+
+            // Check if we have REAL text (not just whitespace)
+            String trimmedText = text == null ? "" : text.trim();
+            boolean hasRealText = trimmedText.length() > 10; // At least 10 non-whitespace characters
+
+            // If no meaningful text extracted, try OCR (for scanned/image-based PDFs)
+            if (!hasRealText) {
+                logger.info("No meaningful text layer found (extracted {} chars, {} after trim), attempting OCR for: {}",
+                    text == null ? 0 : text.length(), trimmedText.length(), file.getName());
+                try {
+                    text = extractTextWithOCR(file);
+                    result.setExtractedText(text);
+                    if (text != null && !text.trim().isEmpty()) {
+                        logger.info("OCR successful, extracted {} characters", text.length());
+                        logger.debug("OCR extracted text preview: {}",
+                            text.length() > 200 ? text.substring(0, 200) + "..." : text);
+                    } else {
+                        logger.warn("OCR completed but extracted no text from: {}", file.getName());
+                    }
+                } catch (Exception ocrException) {
+                    logger.error("OCR failed for {}: {}", file.getName(), ocrException.getMessage(), ocrException);
+                }
+            }
+
+            // Check final result
+            trimmedText = text == null ? "" : text.trim();
+            if (trimmedText.length() < 10) {
+                result.addError("No meaningful text could be extracted from PDF (tried both text extraction and OCR). The PDF may be blank, corrupted, or use an unsupported format.");
                 result.setConfidenceLevel(ParsingResult.ConfidenceLevel.FAILED);
+                logger.error("Complete parsing failure for {}: only {} chars of text extracted", file.getName(), trimmedText.length());
                 return result;
+            } else {
+                logger.info("Successfully extracted {} characters of text from {}", trimmedText.length(), file.getName());
             }
 
             Paystub paystub = result.getPaystub();
@@ -173,6 +211,323 @@ public class PDFPaystubParser implements PaystubParser {
             PDFTextStripper stripper = new PDFTextStripper();
             return stripper.getText(document);
         }
+    }
+
+    /**
+     * Extracts text from a PDF using OCR (Optical Character Recognition).
+     * This is used as a fallback when the PDF has no text layer (scanned documents).
+     *
+     * @param file the PDF file to process
+     * @return the extracted text
+     * @throws IOException if there's an error reading the PDF
+     * @throws TesseractException if OCR fails
+     */
+    private String extractTextWithOCR(File file) throws IOException, TesseractException {
+        if (file == null || !file.exists()) {
+            throw new IllegalArgumentException("File must exist");
+        }
+
+        StringBuilder fullText = new StringBuilder();
+
+        try (PDDocument document = Loader.loadPDF(file)) {
+            PDFRenderer renderer = new PDFRenderer(document);
+            Tesseract tesseract = new Tesseract();
+
+            // Set tessdata path - check multiple locations
+            File tessdataDir = new File("./tessdata");
+            if (tessdataDir.exists() && tessdataDir.isDirectory()) {
+                // Running from IDE or unpacked - tessdata exists in current directory
+                tesseract.setDatapath("./tessdata");
+                logger.debug("Using tessdata from: ./tessdata");
+            } else {
+                // Running from JAR - extract tessdata from classpath to temp directory
+                try {
+                    File tempDir = new File(System.getProperty("java.io.tmpdir"), "EZClientCalculator");
+                    File tempTessdata = new File(tempDir, "tessdata");
+
+                    // Only extract if not already extracted
+                    if (!tempTessdata.exists() || !new File(tempTessdata, "eng.traineddata").exists()) {
+                        logger.info("Extracting tessdata from JAR to: {}", tempTessdata.getAbsolutePath());
+                        extractTessdataFromJar(tempTessdata);
+                    }
+
+                    tesseract.setDatapath(tempTessdata.getAbsolutePath());
+                    logger.debug("Using tessdata from: {}", tempTessdata.getAbsolutePath());
+                } catch (IOException e) {
+                    logger.error("Failed to extract tessdata from JAR: {}", e.getMessage(), e);
+                    // Fallback to current directory (will likely fail but better than crashing)
+                    tesseract.setDatapath("./tessdata");
+                    logger.warn("Fallback to ./tessdata (may not exist)");
+                }
+            }
+
+            // Configure Tesseract for better accuracy
+            tesseract.setLanguage("eng");
+            // Try different PSM modes - paystubs have tabular/structured layout
+            // PSM 6 = Assume a single uniform block of text
+            tesseract.setPageSegMode(6);
+            logger.debug("Tesseract configured: language=eng, PSM=6 (SINGLE_BLOCK)");
+
+            // Process each page
+            int pageCount = document.getNumberOfPages();
+            logger.debug("Processing {} pages with OCR", pageCount);
+
+            for (int pageIndex = 0; pageIndex < pageCount; pageIndex++) {
+                // Try different DPIs - sometimes higher/lower works better
+                int[] dpiOptions = {300, 200, 150};
+                BufferedImage image = null;
+
+                for (int dpi : dpiOptions) {
+                    logger.debug("Rendering page {} to image at {} DPI", pageIndex + 1, dpi);
+                    image = renderer.renderImageWithDPI(pageIndex, dpi);
+                    logger.debug("Image rendered: {}x{} pixels at {} DPI",
+                        image.getWidth(), image.getHeight(), dpi);
+
+                    // Quick test - check if image is not blank
+                    if (!isImageBlank(image)) {
+                        logger.debug("Image at {} DPI appears to have content", dpi);
+                        break;
+                    } else {
+                        logger.warn("Image at {} DPI appears blank!", dpi);
+                    }
+                }
+
+                if (image == null) {
+                    logger.error("Failed to render page {} at any DPI", pageIndex + 1);
+                    continue;
+                }
+
+                // Preprocess image for better OCR accuracy
+                logger.debug("Preprocessing image for OCR...");
+                BufferedImage processedImage = preprocessImageForOCR(image);
+
+                // Try multiple PSM modes on preprocessed image first, then original
+                int[] psmModes = {6, 4, 3, 1, 11, 12}; // Different page segmentation modes
+                String[] psmNames = {"SINGLE_BLOCK", "SINGLE_COLUMN", "AUTO", "AUTO_OSD", "SPARSE_TEXT", "SPARSE_TEXT_OSD"};
+
+                String pageText = null;
+
+                // Try preprocessed image first (usually works better)
+                for (int i = 0; i < psmModes.length && (pageText == null || pageText.trim().isEmpty()); i++) {
+                    tesseract.setPageSegMode(psmModes[i]);
+                    logger.debug("Trying PSM {} ({}) on PREPROCESSED image page {}", psmModes[i], psmNames[i], pageIndex + 1);
+
+                    try {
+                        pageText = tesseract.doOCR(processedImage);
+                        if (pageText != null && !pageText.trim().isEmpty()) {
+                            logger.info("SUCCESS with PSM {} ({}) on PREPROCESSED image! Extracted {} characters",
+                                psmModes[i], psmNames[i], pageText.length());
+                            break;
+                        } else {
+                            logger.debug("PSM {} on preprocessed failed - empty result", psmModes[i]);
+                        }
+                    } catch (TesseractException te) {
+                        logger.warn("PSM {} on preprocessed threw exception: {}", psmModes[i], te.getMessage());
+                    }
+                }
+
+                // If preprocessed didn't work, try original image
+                if (pageText == null || pageText.trim().isEmpty()) {
+                    logger.debug("Preprocessed image OCR failed, trying original image...");
+                    for (int i = 0; i < psmModes.length && (pageText == null || pageText.trim().isEmpty()); i++) {
+                        tesseract.setPageSegMode(psmModes[i]);
+                        logger.debug("Trying PSM {} ({}) on ORIGINAL image page {}", psmModes[i], psmNames[i], pageIndex + 1);
+
+                        try {
+                            pageText = tesseract.doOCR(image);
+                            if (pageText != null && !pageText.trim().isEmpty()) {
+                                logger.info("SUCCESS with PSM {} ({}) on ORIGINAL image! Extracted {} characters",
+                                    psmModes[i], psmNames[i], pageText.length());
+                                break;
+                            } else {
+                                logger.debug("PSM {} on original failed - empty result", psmModes[i]);
+                            }
+                        } catch (TesseractException te) {
+                            logger.warn("PSM {} on original threw exception: {}", psmModes[i], te.getMessage());
+                        }
+                    }
+                }
+
+                if (pageText != null && !pageText.trim().isEmpty()) {
+                    fullText.append(pageText).append("\n");
+                    logger.info("OCR SUCCESS! Extracted {} characters from page {}", pageText.length(), pageIndex + 1);
+                } else {
+                    logger.error("OCR FAILED on BOTH original and processed images for page {}", pageIndex + 1);
+                }
+            }
+
+            logger.info("OCR processing complete. Total text extracted: {} characters", fullText.length());
+        }
+
+        return fullText.toString();
+    }
+
+    /**
+     * Checks if an image appears to be blank (all white or all one color).
+     *
+     * @param image the image to check
+     * @return true if image appears blank, false otherwise
+     */
+    private boolean isImageBlank(BufferedImage image) {
+        // Sample pixels to check if image has variation
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int sampleSize = Math.min(1000, width * height / 100); // Sample 1% of pixels
+
+        int firstPixel = image.getRGB(0, 0);
+        int differentPixels = 0;
+
+        for (int i = 0; i < sampleSize; i++) {
+            int x = (i * 97) % width;  // Use prime number for better distribution
+            int y = (i * 101) % height;
+            if (image.getRGB(x, y) != firstPixel) {
+                differentPixels++;
+            }
+        }
+
+        // If less than 1% of sampled pixels are different, consider it blank
+        boolean isBlank = differentPixels < (sampleSize / 100);
+        if (isBlank) {
+            logger.warn("Image appears blank: only {} of {} sampled pixels differ from first pixel",
+                differentPixels, sampleSize);
+        }
+        return isBlank;
+    }
+
+    /**
+     * Preprocesses an image to improve OCR accuracy.
+     * Applies grayscale conversion and adaptive thresholding.
+     *
+     * @param original the original image
+     * @return the preprocessed image optimized for OCR
+     */
+    private BufferedImage preprocessImageForOCR(BufferedImage original) {
+        int width = original.getWidth();
+        int height = original.getHeight();
+
+        // First pass: calculate optimal threshold using Otsu's method
+        int[] histogram = new int[256];
+
+        // Build histogram and convert to grayscale
+        BufferedImage grayscale = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int rgb = original.getRGB(x, y);
+                int r = (rgb >> 16) & 0xFF;
+                int g = (rgb >> 8) & 0xFF;
+                int b = rgb & 0xFF;
+
+                // Convert to grayscale using luminosity method
+                int gray = (int) (0.299 * r + 0.587 * g + 0.114 * b);
+                histogram[gray]++;
+
+                int grayRGB = (gray << 16) | (gray << 8) | gray;
+                grayscale.setRGB(x, y, grayRGB);
+            }
+        }
+
+        // Calculate optimal threshold using Otsu's method
+        int totalPixels = width * height;
+        float sum = 0;
+        for (int i = 0; i < 256; i++) {
+            sum += i * histogram[i];
+        }
+
+        float sumB = 0;
+        int wB = 0;
+        int wF = 0;
+        float maxVariance = 0;
+        int threshold = 128;
+
+        for (int t = 0; t < 256; t++) {
+            wB += histogram[t];
+            if (wB == 0) continue;
+
+            wF = totalPixels - wB;
+            if (wF == 0) break;
+
+            sumB += t * histogram[t];
+            float mB = sumB / wB;
+            float mF = (sum - sumB) / wF;
+
+            float variance = wB * wF * (mB - mF) * (mB - mF);
+            if (variance > maxVariance) {
+                maxVariance = variance;
+                threshold = t;
+            }
+        }
+
+        logger.debug("Calculated optimal threshold using Otsu's method: {}", threshold);
+
+        // Second pass: apply adaptive threshold with safety bounds
+        // Ensure threshold is reasonable for scanned documents (not too dark)
+        if (threshold < 100) {
+            logger.warn("Calculated threshold {} is too low, adjusting to 100", threshold);
+            threshold = 100;
+        }
+
+        BufferedImage processed = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int rgb = grayscale.getRGB(x, y);
+                int gray = rgb & 0xFF;
+
+                // Apply threshold for binarization
+                gray = gray > threshold ? 255 : 0;
+
+                int grayRGB = (gray << 16) | (gray << 8) | gray;
+                processed.setRGB(x, y, grayRGB);
+            }
+        }
+
+        logger.debug("Image preprocessing complete: grayscale + Otsu binarization (threshold={})", threshold);
+        return processed;
+    }
+
+    /**
+     * Extracts tessdata directory from JAR to a temporary location.
+     *
+     * @param tessdataDir the target directory to extract to
+     * @throws IOException if extraction fails
+     */
+    private void extractTessdataFromJar(File tessdataDir) throws IOException {
+        // Create directory if it doesn't exist
+        if (!tessdataDir.exists()) {
+            tessdataDir.mkdirs();
+        }
+
+        // List of critical tessdata files to extract
+        String[] files = {
+            "tessdata/eng.traineddata",
+            "tessdata/osd.traineddata",
+            "tessdata/pdf.ttf"
+        };
+
+        for (String resourcePath : files) {
+            try (java.io.InputStream is = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
+                if (is == null) {
+                    logger.warn("Resource not found in JAR: {}", resourcePath);
+                    continue;
+                }
+
+                String fileName = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
+                File targetFile = new File(tessdataDir, fileName);
+
+                logger.debug("Extracting {} to {}", resourcePath, targetFile.getAbsolutePath());
+
+                try (java.io.FileOutputStream fos = new java.io.FileOutputStream(targetFile)) {
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = is.read(buffer)) != -1) {
+                        fos.write(buffer, 0, bytesRead);
+                    }
+                }
+
+                logger.debug("Extracted {}", fileName);
+            }
+        }
+
+        logger.info("Tessdata extraction complete");
     }
 
     @Override

@@ -537,3 +537,263 @@
     -fx-font-size: 12px;
     -fx-text-fill: #B0B0B0;
 }
+
+/* Calculation Tab Styles */
+.calculation-box {
+    -fx-background-color: #3D3D3D;
+    -fx-background-radius: 4;
+    -fx-padding: 12;
+}
+
+.calculation-box-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.calculation-box-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #42A5F5;
+}
+
+.variance-box {
+    -fx-background-color: #3D3D3D;
+    -fx-background-radius: 4;
+    -fx-padding: 12;
+}
+
+.variance-box-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.variance-box-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.variance-acceptable {
+    -fx-text-fill: #66BB6A;
+}
+
+.variance-medium {
+    -fx-text-fill: #FFA726;
+}
+
+.variance-significant {
+    -fx-text-fill: #EF5350;
+}
+
+.variance-guardrail {
+    -fx-font-size: 13px;
+}
+
+.recommended-income-section {
+    -fx-background-color: #1F4D2A;
+    -fx-border-color: #66BB6A;
+    -fx-border-width: 2;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 20;
+}
+
+.recommended-income-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #81C784;
+}
+
+.recommended-income-amount {
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #A5D6A7;
+}
+
+.recommended-income-explanation {
+    -fx-font-size: 14px;
+    -fx-text-fill: #B0B0B0;
+}
+
+.notes-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-padding: 10 0 5 0;
+}
+
+.variable-earning-box {
+    -fx-background-color: #3D3D3D;
+    -fx-background-radius: 4;
+    -fx-padding: 10;
+}
+
+.variable-earning-name {
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.variable-earning-ytd {
+    -fx-font-size: 12px;
+}
+
+.variable-earning-monthly {
+    -fx-font-size: 12px;
+    -fx-text-fill: #42A5F5;
+}
+
+.warning-item {
+    -fx-background-color: #4D3A1F;
+    -fx-background-radius: 4;
+    -fx-padding: 8;
+}
+
+.warning-icon {
+    -fx-font-size: 16px;
+    -fx-text-fill: #FFA726;
+}
+
+.warning-text {
+    -fx-font-size: 13px;
+}
+
+/* CopyableField Styles */
+.copyable-field {
+    -fx-background-color: #3D3D3D;
+    -fx-background-radius: 4;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+}
+
+.copyable-field:hover {
+    -fx-border-color: #42A5F5;
+    -fx-background-color: #1E3A5F;
+}
+
+.copyable-field-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.copyable-field-label-prominent {
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+.copyable-field-value {
+    -fx-font-size: 14px;
+    -fx-text-fill: #E0E0E0;
+}
+
+.copyable-field-value-prominent {
+    -fx-font-size: 18px;
+    -fx-text-fill: #90CAF9;
+    -fx-font-weight: bold;
+}
+
+.copyable-field-copied {
+    -fx-text-fill: #66BB6A;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.copyable-field-recommended {
+    -fx-background-color: #1F4D2A;
+    -fx-border-color: #66BB6A;
+    -fx-border-width: 2;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 12;
+}
+
+.copyable-field-variable-total {
+    -fx-background-color: #1E3A5F;
+    -fx-border-color: #42A5F5;
+    -fx-border-width: 2;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 12;
+}
+
+.copyable-field-white {
+    -fx-background-color: #3D3D3D;
+    -fx-background-radius: 4;
+    -fx-padding: 10;
+}
+
+/* ResultsTab Styles */
+.pay-type-row {
+    -fx-background-color: #3D3D3D;
+    -fx-background-radius: 4;
+    -fx-padding: 8;
+}
+
+.pay-type-name {
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-min-width: 150px;
+}
+
+.pay-type-category {
+    -fx-font-size: 12px;
+    -fx-text-fill: #B0B0B0;
+    -fx-min-width: 100px;
+}
+
+.results-summary-section {
+    -fx-background-color: #1F4D2A;
+    -fx-border-color: #66BB6A;
+    -fx-border-width: 3;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 20;
+}
+
+.results-summary-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #81C784;
+}
+
+.results-total-box {
+    -fx-background-color: #3D3D3D;
+    -fx-background-radius: 4;
+    -fx-padding: 15;
+}
+
+.results-total-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #A5D6A7;
+}
+
+.results-total-value {
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #81C784;
+}
+
+.results-explanation {
+    -fx-font-size: 12px;
+    -fx-text-fill: #B0B0B0;
+    -fx-font-style: italic;
+}
+
+.results-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #B0B0B0;
+    -fx-font-style: italic;
+}
+
+.warning-copyable {
+    -fx-background-color: #4D3A1F;
+    -fx-background-radius: 4;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-padding: 10;
+}
+
+.warning-copyable:hover {
+    -fx-background-color: #5D4A2F;
+    -fx-border-color: #FFA726;
+}
